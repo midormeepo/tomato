@@ -1,10 +1,8 @@
-# desktop-tomato
+# Desktop-tomato🍅
 
 Desktop app by Qt6, PySide6
 
-> original by DNZJ
->
-> re-write to support PySide6
+![](https://i.postimg.cc/QdRpfNc6/640.gif)
 
 ## Functions:
 
