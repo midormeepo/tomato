@@ -2,10 +2,11 @@ import os
 import sys
 import random
 import configparser
+import functools
 
 from PySide6.QtCore import QPoint, QTimer, QRect, QUrl
 from PySide6.QtGui import QPainter, QPen, Qt, QBrush, QPolygon, QAction, QIcon, QCursor, QColor, QFont, QPainterPath, \
-    QDesktopServices
+    QDesktopServices, QActionGroup
 import pic_rc
 from PySide6.QtWidgets import QWidget, QApplication, QMenu, QSystemTrayIcon
 
@@ -21,7 +22,8 @@ class DesktopTomato(QWidget):
         # 托盘化初始
         self.initTray()
         # 静态加载
-        self.initSet()
+        self.initSet(9)
+        self.set_size(str(self.size))
 
     # 初始化数据
     def init_data(self):
@@ -36,10 +38,10 @@ class DesktopTomato(QWidget):
         data = config.read('tomato.ini')
         # todo：初始化配置
         if data == []:
-            print("no ini")
             config.add_section("base")
             config.set("base", "vibration", "1")
             config.set("base", "shownum", "0")
+            config.set("base", "size", "1")
             config.write(open('tomato.ini', "w"))
             config = configparser.ConfigParser()
             config.read('tomato.ini')
@@ -47,6 +49,7 @@ class DesktopTomato(QWidget):
         # 定义初始化
         self.is_vibration = bool(int(config['base']['vibration']))
         self.is_shownum = bool(int(config['base']['shownum']))
+        self.size = float(config['base']['size'])
 
     # 窗体初始化
     def init(self):
@@ -56,10 +59,10 @@ class DesktopTomato(QWidget):
         self.repaint()
 
     # 静态初始图加载
-    def initSet(self):
-        self.resize(80, 75)
+    def initSet(self, sign):
+        self.resize(80 * self.size, 75 * self.size)
         # 调用自定义的setPosition
-        self.setPosition(0)
+        self.setPosition(sign)
         self.show()
 
     # 果实
@@ -74,6 +77,7 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         qp1.setPen(pen)
+        qp1.scale(self.size, self.size)
 
         # 设置画刷
         brush = QBrush()
@@ -100,6 +104,7 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         qp5.setPen(pen)
+        qp5.scale(self.size, self.size)
         ##设置画刷
         brush = QBrush()
         brush.setColor(QColor(255, 255, 255, 120))
@@ -121,6 +126,7 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         qp4.setPen(pen)
+        qp4.scale(self.size, self.size)
         ##设置画刷
         brush4 = QBrush()
         brush4.setStyle(Qt.SolidPattern)  # 填充样式
@@ -152,6 +158,8 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         leaf_mask.setPen(pen)
+        leaf_mask.scale(self.size, self.size)
+
         leaf_mask_brush = QBrush()
         leaf_mask_brush.setColor(QColor(0, 0, 0, 80))
         leaf_mask_brush.setStyle(Qt.SolidPattern)  # 填充样式
@@ -174,6 +182,8 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         qp2.setPen(pen)
+        qp2.scale(self.size, self.size)
+
         brush2 = QBrush()
         brush2.setColor(QColor(40, 150, 0, 250))
         brush2.setStyle(Qt.SolidPattern)  # 填充样式
@@ -196,6 +206,8 @@ class DesktopTomato(QWidget):
         pen.setCapStyle(Qt.FlatCap)  # 线端点样式
         pen.setJoinStyle(Qt.RoundJoin)  # 线的连接点样式
         qp3.setPen(pen)
+        qp3.scale(self.size, self.size)
+
         brush2 = QBrush()
         brush2.setColor(QColor(110, 68, 40, 250))
         brush2.setStyle(Qt.SolidPattern)  # 填充样式
@@ -211,8 +223,9 @@ class DesktopTomato(QWidget):
             painter.begin(self)
             # 设置画笔颜色
             painter.setPen(QColor(255, 255, 255))
+            painter.scale(self.size, self.size)
             # 设置字体大小
-            painter.setFont(QFont('SimSun', 10))
+            painter.setFont(QFont('SimSun', 12))
             # 设置要书写的内容
             self.text = str(round((1500000 - self.condition * 12500) / (1000 * 60))) + f"分钟"
             if self.condition == 120:
@@ -280,6 +293,8 @@ class DesktopTomato(QWidget):
     def setPosition(self, sign):
         # 抖动 norandom
         tomato_geo = self.geometry()
+        if sign == 0:
+            return self.move(tomato_geo.x(), tomato_geo.y())
         if sign == 1:
             return self.move(tomato_geo.x() + 3, tomato_geo.y() - 2)
         if sign == 2:
@@ -308,7 +323,6 @@ class DesktopTomato(QWidget):
         # 拖动时鼠标图形的设置
         self.setCursor(QCursor(Qt.ClosedHandCursor))
         screen_geo = self.geometry()
-        print(screen_geo)
 
     # 鼠标移动时调用，实现随鼠标移动
     def mouseMoveEvent(self, event):
@@ -376,29 +390,49 @@ class DesktopTomato(QWidget):
         self.tray_icon_menu.addAction(showing)
         # 在菜单栏添加一个无子菜单的菜单项‘退出’
         self.tray_icon_menu.addAction(quit_action)
-        setting = self.tray_icon_menu.addMenu(u"设置")
+        self.setting = self.tray_icon_menu.addMenu(u"设置")
+
+        self.setsize = self.setting.addMenu(u"图标大小")
+        self.ceui = QActionGroup(self, setExclusive=True)
+        self.size_s = QAction('图标小', self, checkable=True)
+        self.size_s.setStatusTip('图标小')
+        self.size_s.triggered.connect(functools.partial(self.set_size, '0.8'))
+        self.setsize.addAction(self.size_s)
+        self.ceui.addAction(self.size_s)
+
+        self.size_m = QAction('图标中', self, checkable=True)
+        self.size_m.setStatusTip('图标中')
+        self.size_m.triggered.connect(functools.partial(self.set_size, '1.0'))
+        # self.size_m.setChecked(True)
+        self.setsize.addAction(self.size_m)
+        self.ceui.addAction(self.size_m)
+
+        self.size_l = QAction('图标大', self, checkable=True)
+        self.size_l.setStatusTip('图标大')
+        self.size_l.triggered.connect(functools.partial(self.set_size, '1.2'))
+        self.setsize.addAction(self.size_l)
+        self.ceui.addAction(self.size_l)
 
         timeshow = QAction('显示倒计时', self, checkable=True)
         timeshow.setStatusTip('显示倒计时')
         timeshow.setChecked(self.is_shownum)
         timeshow.triggered.connect(self.show_timeNum)
-        setting.addAction(timeshow)
+        self.setting.addAction(timeshow)
 
         vibration = QAction('开启抖动', self, checkable=True)
         vibration.setStatusTip('开启抖动')
         vibration.setChecked(self.is_vibration)
         vibration.triggered.connect(self.set_vibration)
-        setting.addAction(vibration)
+        self.setting.addAction(vibration)
 
         # 插入分隔符
         separator = QAction(self)
         separator.setSeparator(True)
-        setting.addAction(separator)
+        self.setting.addAction(separator)
 
         # todo:更新
         web = QAction(u'检查更新:1.1.1', self, triggered=self.show_web)
-        setting.addAction(web)
-
+        self.setting.addAction(web)
 
         # QSystemTrayIcon类为应用程序在系统托盘中提供一个图标
         self.tray_icon = QSystemTrayIcon(self)
@@ -440,6 +474,20 @@ class DesktopTomato(QWidget):
         # 将config对象写入配置文件
         with open('tomato.ini', mode='w') as fp:
             config.write(fp)
+        self.update()
+        self.paintEvent(self)
+
+    def set_size(self, size: str):
+        setnum = {'0.8': 'size_s', '1.0': 'size_m', '1.2': 'size_l'}
+        self.size = float(size)
+        eval(f'self.{setnum[size]}').setChecked(True)
+        config = configparser.ConfigParser()
+        config.read('tomato.ini')
+        config['base']['size'] = size
+        # 将config对象写入配置文件
+        with open('tomato.ini', mode='w') as fp:
+            config.write(fp)
+        self.initSet(0)
         self.update()
         self.paintEvent(self)
 
