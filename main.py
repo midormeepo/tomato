@@ -82,8 +82,8 @@ class DesktopTomato(QWidget):
             self.condition += 1
             self.update()
             self.paintEvent(self)
-            # self.timer.singleShot(12500, self.clickAction)
-            self.timer.singleShot(25, self.clickAction)
+            self.timer.singleShot(12500, self.clickAction)
+            # self.timer.singleShot(25, self.clickAction)
             if self.condition == 120:
                 self.tray_icon.setIcon(QIcon(os.path.join(':pic/icon1.ico')))
                 self.timeout_num = 0
@@ -101,7 +101,7 @@ class DesktopTomato(QWidget):
                     self.setPosition(2)
                 self.update()
                 self.paintEvent(self)
-                self.timer.singleShot(50, self.timeOut)
+                self.timer.singleShot(35, self.timeOut)
 
     # 开始番茄钟
     def startTomatoClock(self):
@@ -327,6 +327,7 @@ class DesktopTomato(QWidget):
         setnum = {'zh': '0', 'en': 'eng-chs.qm', '2': 'size_l'}
         config = configparser.ConfigParser()
         config.read('tomato.ini')
+        print(lan)
         config['base']['language'] = setnum[lan]
         # 将config对象写入配置文件
         with open('tomato.ini', mode='w') as fp:
@@ -364,6 +365,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('tomato.ini')
     language = str(config['base']['language'])
+    print(language)
 
     myappTranslator = QtCore.QTranslator()
     myappTranslator.load(language)
