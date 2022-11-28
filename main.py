@@ -4,11 +4,11 @@ import about
 import pic_rc
 import Qpainter
 import configparser
-from PySide6 import QtCore
+from PySide6 import QtCore, QtWidgets
 from functools import partial
-from PySide6.QtCore import QTimer, QRect
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import Qt, QAction, QIcon, QCursor, QActionGroup
-from PySide6.QtWidgets import QWidget, QApplication, QMenu, QSystemTrayIcon, QPushButton, QLabel
+from PySide6.QtWidgets import QWidget, QApplication, QMenu, QSystemTrayIcon
 
 
 class DesktopTomato(QWidget):
@@ -231,7 +231,6 @@ class DesktopTomato(QWidget):
         # 在菜单栏添加一个无子菜单的菜单项‘退出’
         self.tray_icon_menu.addAction(quit_action)
 
-
         timeshow = QAction(self.tr("显示倒计时"), self, checkable=True)
         timeshow.setStatusTip(self.tr("显示倒计时"))
         timeshow.setChecked(self.is_shownum)
@@ -357,6 +356,15 @@ class DesktopTomato(QWidget):
         # QDesktopServices.openUrl(QUrl("https://t.bilibili.com/731192047445213186"))
         s.show()
 
+
+class ChildWindow(QtWidgets.QDialog, about.AboutWindow):
+    def __init__(self):
+        super(ChildWindow, self).__init__()
+        self.setupUi(self)
+
+        self.setWindowTitle('child window')
+
+
 if __name__ == '__main__':
     # 创建了一个QApplication对象，对象名为app，带两个参数argc,argv
     # 所有的应用必须创建一个应用（Application）对象。sys.argv参数是一个来自命令行的参数列表。
@@ -373,7 +381,7 @@ if __name__ == '__main__':
 
     # 窗口组件初始化
     tomato = DesktopTomato()
-    s = about.AboutWindow()
+    s = ChildWindow()
     s.setWindowTitle(tomato.tr("检查更新"))
 
     # 1. 进入时间循环；

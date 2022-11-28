@@ -168,7 +168,7 @@ def word(self):
         # 设置字体大小
         painter.setFont(QFont('SimSun', 12))
         # 设置要书写的内容
-        self.text = str(round((1500000 - self.condition * 12500) / (1000 * 60))) + f"分钟"
+        self.text = str(round((1500000 - self.condition * 12500) / (1000 * 60)))
         if self.condition == 120:
             self.text = f"完成啦"
         rect = QRect(5, 10, 70, 65)
